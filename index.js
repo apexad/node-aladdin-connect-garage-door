@@ -72,7 +72,7 @@ module.exports = function(user, password, action, callback, deviceNumber = 0, do
                 uri: genieRPC_URI,
                 headers: genieRPC_Header,
                 body: {
-                  auth: genieAuth,
+                  auth: genieRPC_Auth,
                   calls: [
                     {
                       arguments: [ { alias: 'dps' + doorNumber + '.desired_status' }, 1 ],
