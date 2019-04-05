@@ -33,7 +33,7 @@ function getDoorState(statusNumber) {
   }
 }
 
-module.exports = (user, password, action, callback, deviceNumber = 0, doorNumber = 1) {
+module.exports = function(user, password, action, callback, deviceNumber = 0, doorNumber = 1) {
   // 1: get loginToken
   rp({
     method: 'GET',
