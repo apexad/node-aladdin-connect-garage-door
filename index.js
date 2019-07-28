@@ -98,67 +98,73 @@ async function getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) 
 }
 
 module.exports = async (user, password, action, callback, deviceNumber = 0, doorNumber = 1) => {
-  
-  // 1: get loginToken
-  let loginToken = await rp({
-    method: 'GET',
-    uri: genieURI + 'users/_this/token',
-    headers: Object.assign({}, genieAppHeader, {
-      'Authorization': 'Basic '+ Buffer.from(user + ':' + password).toString('base64'),
-    }),
-    json: true,
-  });
-  
-  debug('Token',loginToken);
-  
-  let genieTokenHeader = Object.assign({}, genieAppHeader, { 'Authorization': 'Token: ' + loginToken });
-  
-  // 2: get userID
-  let responseUser = await rp({ 
-    method: 'GET', 
-    uri: genieURI + 'users/_this', 
-    headers: genieTokenHeader, 
-    json: true, 
-  });
 
-  debug('users/_this',responseUser);
+  try {
   
-  let userId = responseUser.id;
+    // 1: get loginToken
+    let loginToken = await rp({
+      method: 'GET',
+      uri: genieURI + 'users/_this/token',
+      headers: Object.assign({}, genieAppHeader, {
+        'Authorization': 'Basic '+ Buffer.from(user + ':' + password).toString('base64'),
+      }),
+      json: true,
+    });
+    
+    debug('Token',loginToken);
+    
+    let genieTokenHeader = Object.assign({}, genieAppHeader, { 'Authorization': 'Token: ' + loginToken });
+    
+    // 2: get userID
+    let responseUser = await rp({ 
+      method: 'GET', 
+      uri: genieURI + 'users/_this', 
+      headers: genieTokenHeader, 
+      json: true, 
+    });
 
-  // 3: get portalId
-  let portals = await rp({ 
-    method: 'GET', 
-    uri: genieURI + 'users/' + userId + '/portals', 
-    headers: genieTokenHeader, 
-    json: true, 
-  });
+    debug('users/_this',responseUser);
+    
+    let userId = responseUser.id;
 
-  debug('Portals', portals);
+    // 3: get portalId
+    let portals = await rp({ 
+      method: 'GET', 
+      uri: genieURI + 'users/' + userId + '/portals', 
+      headers: genieTokenHeader, 
+      json: true, 
+    });
 
-  let portalId = portals[0].PortalID;
-  
-  // 4: get portalDetails
-  let portalDetails = await rp({
-    method: 'GET', 
-    uri: genieURI + 'portals/' + portalId, 
-    headers: genieTokenHeader, 
-    json: true 
-  });
+    debug('Portals', portals);
 
-  debug('Portals/'+portalId, portalDetails);
-  
-  // use info.key as a part of auth token
-  let genieRPC_Auth = {
-    cik: portalDetails.info.key,
-    client_id: portalDetails.devices[deviceNumber]
-  };
+    let portalId = portals[0].PortalID;
+    
+    // 4: get portalDetails
+    let portalDetails = await rp({
+      method: 'GET', 
+      uri: genieURI + 'portals/' + portalId, 
+      headers: genieTokenHeader, 
+      json: true 
+    });
 
-  debug('PortalDetails.Info',portalDetails.info);
+    debug('Portals/'+portalId, portalDetails);
+    
+    // use info.key as a part of auth token
+    let genieRPC_Auth = {
+      cik: portalDetails.info.key,
+      client_id: portalDetails.devices[deviceNumber]
+    };
 
-  let genieRPC_Header = Object.assign({}, genieAppHeader, {
-    'Authorization': 'Token: ' + loginToken,
-    'Content-Type': 'application/json',
-  });
+    debug('PortalDetails.Info',portalDetails.info);
+
+    let genieRPC_Header = Object.assign({}, genieAppHeader, {
+      'Authorization': 'Token: ' + loginToken,
+      'Content-Type': 'application/json',
+    });
+  } catch (error) {
+    console.log(error);
+    return callback('STOPPED');
+  }
 
   let door_status;
 
@@ -174,6 +180,6 @@ module.exports = async (user, password, action, callback, deviceNumber = 0, door
       door_status = await getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
   }
   
-  callback(door_statsus);
+  return callback(door_statsus);
 }
 
