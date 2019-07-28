@@ -62,8 +62,8 @@ async function openClose(shouldOpen, genieRPC_URI,genieRPC_Header,genieRPC_Auth,
                 json: true,
               });
       return shouldOpen?'OPEENING':'CLOSING';
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
       return 'STOPPED'; 
     }
 }
@@ -91,14 +91,13 @@ async function getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) 
 
     return getDoorState(response ? response[0].result[0][1] : -1 ); 
 
-  } catch (error) {
-    console.log(error);
+  } catch (err) {
+    console.log(err);
     return 'STOPPED';
   }
 }
 
-module.exports = async (user, password, action, callback, deviceNumber = 0, doorNumber = 1) => {
-
+async function sendCommandToDoor(user, password, action, deviceNumber, doorNumber ) {
   try {
   
     // 1: get loginToken
@@ -161,25 +160,29 @@ module.exports = async (user, password, action, callback, deviceNumber = 0, door
       'Authorization': 'Token: ' + loginToken,
       'Content-Type': 'application/json',
     });
-  } catch (error) {
-    console.log(error);
-    return callback('STOPPED');
+  } catch (err) {
+    console.log(err);
+    return 'STOPPED';
   }
-
-  let door_status;
 
   switch(action) {
     case 'open':
-      door_status = await openClose(1, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
+      return await openClose(1, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
       break;
     case 'close':
-      door_status = await openClose(0, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
-      break;
+      return await openClose(0, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
     case 'status':
     default:
-      door_status = await getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
+      return await getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
   }
   
-  return callback(door_statsus);
+  return 'STOPPED';
 }
+
+// keping the callback signature for backwards compatibility
+module.exports = (user, password, action, callback, deviceNumber = 0, doorNumber = 1) => {
+  sendCommandToDoor(user, password, action, deviceNumber, doorNumber)
+    .then(result => callback(result))
+    .catch(err => console.log(err));
+};
 
