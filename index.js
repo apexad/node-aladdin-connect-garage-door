@@ -39,51 +39,51 @@ function getDoorState(statusNumber) {
 }
 
 async function openClose(shouldOpen, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) {
-    await rp({
-                method: 'POST',
-                uri: genieRPC_URI,
-                headers: genieRPC_Header,
-                body: {
-                  auth: genieRPC_Auth,
-                  calls: [
-                    {
-                      arguments: [ { alias: 'dps' + doorNumber + '.desired_status' }, shouldOpen ],
-                      id: 1,
-                      procedure: 'write'
-                    },
-                    {
-                      arguments: [ { alias: 'dps' + doorNumber + '.desired_status_user' }, user ],
-                      id: 1,
-                      procedure: 'write'
-                    },
-                  ]
-                },
-                json: true,
-              });
-      return shouldOpen?'OPEENING':'CLOSING';
+  await rp({
+    method: 'POST',
+    uri: genieRPC_URI,
+    headers: genieRPC_Header,
+    body: {
+      auth: genieRPC_Auth,
+      calls: [
+        {
+          arguments: [ { alias: 'dps' + doorNumber + '.desired_status' }, shouldOpen ],
+          id: 1,
+          procedure: 'write'
+        },
+        {
+          arguments: [ { alias: 'dps' + doorNumber + '.desired_status_user' }, user ],
+          id: 1,
+          procedure: 'write'
+        },
+      ]
+    },
+    json: true,
+  });
+  return shouldOpen?'OPEENING':'CLOSING';
 }
 
 async function getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) {
-    let response = await rp({
-      method: 'POST',
-      uri: genieRPC_URI,
-      headers: genieRPC_Header,
-      body: {
-        auth: genieRPC_Auth,
-        calls: [
-          {
-            arguments: [ { alias: 'dps' + doorNumber + '.door_status' }, {} ],
-            id: 1,
-            procedure: 'read'
-          },
-        ]
-      },
-      json: true,
-    });
-    
-    debug('door_status response', response);
+  let response = await rp({
+    method: 'POST',
+    uri: genieRPC_URI,
+    headers: genieRPC_Header,
+    body: {
+      auth: genieRPC_Auth,
+      calls: [
+        {
+          arguments: [ { alias: 'dps' + doorNumber + '.door_status' }, {} ],
+          id: 1,
+          procedure: 'read'
+        },
+      ]
+    },
+    json: true,
+  });
+  
+  debug('door_status response', response);
 
-    return getDoorState(response ? response[0].result[0][1] : -1 ); 
+  return getDoorState(response ? response[0].result[0][1] : -1 ); 
 }
 
 async function sendCommandToDoor(user, password, action, deviceNumber, doorNumber ) {
