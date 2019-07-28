@@ -38,8 +38,8 @@ function getDoorState(statusNumber) {
   }
 }
 
-async function openClose(shouldOpen, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) {
-  await rp({
+async function openClose(shouldOpen, user, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) {
+  let response = await rp({
     method: 'POST',
     uri: genieRPC_URI,
     headers: genieRPC_Header,
@@ -60,7 +60,12 @@ async function openClose(shouldOpen, genieRPC_URI,genieRPC_Header,genieRPC_Auth,
     },
     json: true,
   });
-  return shouldOpen?'OPEENING':'CLOSING';
+
+  debug(response);
+
+  if (response["error"]) return 'STOPPED';
+
+  return shouldOpen?'OPENING':'CLOSING';
 }
 
 async function getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) {
@@ -83,7 +88,7 @@ async function getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) 
   
   debug('door_status response', response);
 
-  return getDoorState(response ? response[0].result[0][1] : -1 ); 
+  return getDoorState(response && response[0] && response[0].result ? response[0].result[0][1] : -1 ); 
 }
 
 async function sendCommandToDoor(user, password, action, deviceNumber, doorNumber ) {
@@ -152,10 +157,10 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
 
     switch(action) {
       case 'open':
-        return await openClose(1, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
+        return await openClose(1, user, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
         break;
       case 'close':
-        return await openClose(0, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
+        return await openClose(0, user, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
       case 'status':
       default:
         return await getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
