@@ -10,7 +10,7 @@ const genieAppHeader = {
     'BuildVersion': '131',
 }
 
-const DEBUG = 1;
+const DEBUG = 0;
 
 function debug(info, obj) {
   if (DEBUG) {
