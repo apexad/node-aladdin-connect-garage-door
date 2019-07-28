@@ -39,7 +39,6 @@ function getDoorState(statusNumber) {
 }
 
 async function openClose(shouldOpen, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) {
-   try {
     await rp({
                 method: 'POST',
                 uri: genieRPC_URI,
@@ -62,14 +61,9 @@ async function openClose(shouldOpen, genieRPC_URI,genieRPC_Header,genieRPC_Auth,
                 json: true,
               });
       return shouldOpen?'OPEENING':'CLOSING';
-    } catch (err) {
-      console.log(err);
-      return 'STOPPED'; 
-    }
 }
 
 async function getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) {
-  try {
     let response = await rp({
       method: 'POST',
       uri: genieRPC_URI,
@@ -90,11 +84,6 @@ async function getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) 
     debug('door_status response', response);
 
     return getDoorState(response ? response[0].result[0][1] : -1 ); 
-
-  } catch (err) {
-    console.log(err);
-    return 'STOPPED';
-  }
 }
 
 async function sendCommandToDoor(user, password, action, deviceNumber, doorNumber ) {
@@ -160,21 +149,23 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
       'Authorization': 'Token: ' + loginToken,
       'Content-Type': 'application/json',
     });
+
+    switch(action) {
+      case 'open':
+        return await openClose(1, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
+        break;
+      case 'close':
+        return await openClose(0, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
+      case 'status':
+      default:
+        return await getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
+    }
+
   } catch (err) {
     console.log(err);
     return 'STOPPED';
   }
 
-  switch(action) {
-    case 'open':
-      return await openClose(1, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
-      break;
-    case 'close':
-      return await openClose(0, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
-    case 'status':
-    default:
-      return await getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
-  }
   
   return 'STOPPED';
 }
