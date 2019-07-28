@@ -61,9 +61,9 @@ async function openClose(shouldOpen, user, genieRPC_URI,genieRPC_Header,genieRPC
     json: true,
   });
 
-  debug(response);
+  debug('desired_status response', response);
 
-  if (response["error"]) return 'STOPPED';
+  if (response.error) return 'STOPPED';
 
   return shouldOpen?'OPENING':'CLOSING';
 }
@@ -87,8 +87,10 @@ async function getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) 
   });
   
   debug('door_status response', response);
+  
+  if (response.error) return 'STOPPED';
 
-  return getDoorState(response && response[0] && response[0].result ? response[0].result[0][1] : -1 ); 
+  return getDoorState(response[0].result[0][1]); 
 }
 
 async function sendCommandToDoor(user, password, action, deviceNumber, doorNumber ) {
