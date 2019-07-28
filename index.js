@@ -1,3 +1,5 @@
+'use strict'
+
 const rp = require('request-promise-native');
 const genieURI = 'https://genie.exosite.com/api/portals/v1/';
 const genieRPC_URI = 'https://genie.m2.exosite.com/onep:v1/rpc/process';
@@ -36,7 +38,7 @@ function getDoorState(statusNumber) {
   }
 }
 
-async function openClose(shouldOpen, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber, callback) {
+async function openClose(shouldOpen, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) {
    try {
     await rp({
                 method: 'POST',
@@ -59,13 +61,14 @@ async function openClose(shouldOpen, genieRPC_URI,genieRPC_Header,genieRPC_Auth,
                 },
                 json: true,
               });
-      return callback(shouldOpen?'OPEENING':'CLOSING');
+      return shouldOpen?'OPEENING':'CLOSING';
     } catch (error) {
-      return callback('STOPPED'); 
+      console.log(error);
+      return 'STOPPED'; 
     }
 }
 
-async function getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber, callback) {
+async function getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) {
   try {
     let response = await rp({
       method: 'POST',
@@ -86,20 +89,15 @@ async function getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber, 
     
     debug('door_status response', response);
 
-    callback(getDoorState(response ? response[0].result[0][1] : -1 )); 
+    return getDoorState(response ? response[0].result[0][1] : -1 ); 
 
   } catch (error) {
-    console.log(error); 
+    console.log(error);
+    return 'STOPPED';
   }
 }
 
 module.exports = async (user, password, action, callback, deviceNumber = 0, doorNumber = 1) => {
-  var genieRPC_Auth;
-  var genieRPC_Header;
-  var genieTokenHeader;
-  var userId;
-  var portalId;
-  var portalDetails;
   
   // 1: get loginToken
   let loginToken = await rp({
@@ -162,16 +160,20 @@ module.exports = async (user, password, action, callback, deviceNumber = 0, door
     'Content-Type': 'application/json',
   });
 
+  let door_status;
+
   switch(action) {
     case 'open':
-      await openClose(1, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber, callback);
+      door_status = await openClose(1, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
       break;
     case 'close':
-      await openClose(0, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber, callback);
+      door_status = await openClose(0, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
       break;
     case 'status':
     default:
-      await getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber, callback);
+      door_status = await getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
   }
+  
+  callback(door_statsus);
 }
 
