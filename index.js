@@ -16,8 +16,6 @@ var portalDetails;
 
 function getDoorState(statusNumber) {
   switch(statusNumber) {
-    case 0: // Unknown
-      return 'STOPPED';
     case 1: //Open
       return 'OPEN';
     case 2: // Opening
@@ -28,7 +26,9 @@ function getDoorState(statusNumber) {
     case 5: // Closing
     case 6: // Timeout Closing
       return 'CLOSING'
+    case 0: // Unknown
     case 7: // Not Configured
+    default: // Unknown
       return 'STOPPED'
   }
 }
