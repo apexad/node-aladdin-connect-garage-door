@@ -121,10 +121,7 @@ module.exports = function(user, password, action, callback, deviceNumber = 0, do
               rp({
                 method: 'POST',
                 uri: genieRPC_URI,
-                headers: Object.assign({}, genieAppHeader, {
-                  'Authorization': 'Token: ' + loginToken,
-                  'Content-Type': 'application/json',
-                }),
+                headers: genieRPC_Header,
                 body: {
                   auth: genieRPC_Auth,
                   calls: [
