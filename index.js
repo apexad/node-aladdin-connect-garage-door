@@ -113,7 +113,7 @@ module.exports = function(user, password, action, callback, deviceNumber = 0, do
                 },
                 json: true,
               })
-              .then(function(response) { return callback('CLOSING'); })
+              .then(function(response) { return callback(response.error?'STOPPED':'CLOSING'); })
               .catch(function(error) { return callback('STOPPED') });
               break;
             case 'status':
@@ -137,7 +137,7 @@ module.exports = function(user, password, action, callback, deviceNumber = 0, do
                 },
                 json: true,
               })
-              .then(function(response) {  callback(getDoorState(response[0].result[0][1])); })
+              .then(function(response) { callback(getDoorState(response.error?'STOPPED':response[0].result[0][1])); })
               .catch(function(error) { console.log(error); });
             }
         });
