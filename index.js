@@ -27,7 +27,7 @@ function getDoorState(statusNumber) {
       return 'CLOSED';
     case 5: // Closing
     case 6: // Timeout Closing
-      return 'CLOSING,'
+      return 'CLOSING'
     case 7: // Not Configured
       return 'STOPPED'
   }
