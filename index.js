@@ -16,8 +16,6 @@ var portalDetails;
 
 function getDoorState(statusNumber) {
   switch(statusNumber) {
-    case 0: // Unknown
-      return 'STOPPED';
     case 1: //Open
       return 'OPEN';
     case 2: // Opening
@@ -27,9 +25,9 @@ function getDoorState(statusNumber) {
       return 'CLOSED';
     case 5: // Closing
     case 6: // Timeout Closing
-      return 'CLOSING,'
-    case 7: // Not Configured
-      return 'STOPPED'
+      return 'CLOSING';
+    default: // Not Configured/Unknown
+      return 'STOPPED';
   }
 }
 
@@ -88,8 +86,8 @@ module.exports = function(user, password, action, callback, deviceNumber = 0, do
                 },
                 json: true,
               })
-              .then(function(response) { return callback('OPENING'); })
-              .catch(function(error) { return callback('STOPPED'); });
+              .then(function(response) {return callback(getDoorState(3)); })
+              .catch(function(error) { return callback(getDoorState(0)); });
               break;
             case 'close':
               rp({
@@ -113,18 +111,15 @@ module.exports = function(user, password, action, callback, deviceNumber = 0, do
                 },
                 json: true,
               })
-              .then(function(response) { return callback('CLOSING'); })
-              .catch(function(error) { return callback('STOPPED') });
+              .then(function(response) { return callback(getDoorState(6)); })
+              .catch(function(error) { return callback(getDoorState(0)) });
               break;
             case 'status':
             default:
               rp({
                 method: 'POST',
                 uri: genieRPC_URI,
-                headers: Object.assign({}, genieAppHeader, {
-                  'Authorization': 'Token: ' + loginToken,
-                  'Content-Type': 'application/json',
-                }),
+                headers: genieRPC_Header,
                 body: {
                   auth: genieRPC_Auth,
                   calls: [
