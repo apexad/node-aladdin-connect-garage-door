@@ -1,6 +1,6 @@
 {
   "name": "node-aladdin-connect-garage-door",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "node.js script to connect to aladdin connect garage door",
   "main": "index.js",
   "scripts": {
