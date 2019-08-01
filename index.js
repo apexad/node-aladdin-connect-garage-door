@@ -4,12 +4,11 @@ const rp = require('request-promise-native');
 const genieURI = 'https://genie.exosite.com/api/portals/v1/';
 const genieRPC_URI = 'https://genie.m2.exosite.com/onep:v1/rpc/process';
 const genieAppHeader = {
-    'AppVersion': '3.0.0',
-    'BundleName': 'com.geniecompany.AladdinConnect',
-    'User-Agent': 'Aladdin Connect iOS v3.0.0',
-    'BuildVersion': '131',
+  'AppVersion': '3.0.0',
+  'BundleName': 'com.geniecompany.AladdinConnect',
+  'User-Agent': 'Aladdin Connect iOS v3.0.0',
+  'BuildVersion': '131',
 }
-
 const DEBUG = 0;
 
 function debug(info, obj) {
@@ -20,8 +19,6 @@ function debug(info, obj) {
 
 function getDoorState(statusNumber) {
   switch(statusNumber) {
-    case 0: // Unknown
-      return 'STOPPED';
     case 1: //Open
       return 'OPEN';
     case 2: // Opening
@@ -32,6 +29,7 @@ function getDoorState(statusNumber) {
     case 5: // Closing
     case 6: // Timeout Closing
       return 'CLOSING';
+    case 0: // Unknown
     case 7: // Not Configured
     default: // Error
       return 'STOPPED'
@@ -60,11 +58,11 @@ async function openClose(shouldOpen, user, genieRPC_URI,genieRPC_Header,genieRPC
     },
     json: true,
   });
-
+  
   debug('desired_status response', response);
-
+  
   if (response.error) return 'STOPPED';
-
+  
   return shouldOpen?'OPENING':'CLOSING';
 }
 
@@ -89,13 +87,13 @@ async function getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) 
   debug('door_status response', response);
   
   if (response.error) return 'STOPPED';
-
+  
   return getDoorState(response[0].result[0][1]); 
 }
 
 async function sendCommandToDoor(user, password, action, deviceNumber, doorNumber ) {
   try {
-  
+    
     // 1: get loginToken
     let loginToken = await rp({
       method: 'GET',
@@ -117,11 +115,11 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
       headers: genieTokenHeader, 
       json: true, 
     });
-
+    
     debug('users/_this',responseUser);
     
     let userId = responseUser.id;
-
+    
     // 3: get portalId
     let portals = await rp({ 
       method: 'GET', 
@@ -129,9 +127,9 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
       headers: genieTokenHeader, 
       json: true, 
     });
-
+    
     debug('Portals', portals);
-
+    
     let portalId = portals[0].PortalID;
     
     // 4: get portalDetails
@@ -141,7 +139,7 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
       headers: genieTokenHeader, 
       json: true 
     });
-
+    
     debug('Portals/'+portalId, portalDetails);
     
     // use info.key as a part of auth token
@@ -149,38 +147,34 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
       cik: portalDetails.info.key,
       client_id: portalDetails.devices[deviceNumber]
     };
-
+    
     debug('PortalDetails.Info',portalDetails.info);
-
+    
     let genieRPC_Header = Object.assign({}, genieAppHeader, {
       'Authorization': 'Token: ' + loginToken,
       'Content-Type': 'application/json',
     });
-
+    
     switch(action) {
       case 'open':
-        return await openClose(1, user, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
-        break;
+        return await openClose(1,user,genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
       case 'close':
-        return await openClose(0, user, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
+        return await openClose(0,user,genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
       case 'status':
       default:
         return await getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
     }
-
   } catch (err) {
     console.log(err);
     return 'STOPPED';
   }
-
-  
   return 'STOPPED';
 }
 
 // keping the callback signature for backwards compatibility
 module.exports = (user, password, action, callback, deviceNumber = 0, doorNumber = 1) => {
   sendCommandToDoor(user, password, action, deviceNumber, doorNumber)
-    .then(result => callback(result))
-    .catch(err => console.log(err));
+  .then(result => callback(result))
+  .catch(err => console.log(err));
 };
 
