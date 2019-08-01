@@ -30,3 +30,4 @@ Uses API Documentation from  [aladdin connect postman](https://documenter.getpos
 ## Home Automation
 This can be used in a home automation program that will run commands to check status, open, and close a garage door.  
 An example use of this in in the `example` folder. This setup has been tested as command `node state.js` with [homebridge-garagedoor-command](https://www.npmjs.com/package/homebridge-garagedoor-command)
+You can also simply just use [homebridge-aladdin-connect-garage-door](https://github.com/iAnatoly/homebridge-aladdin-connect-garage-door)
