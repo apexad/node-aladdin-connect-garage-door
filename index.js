@@ -9,10 +9,9 @@ const genieAppHeader = {
   'User-Agent': 'Aladdin Connect iOS v3.0.0',
   'BuildVersion': '131',
 }
-const DEBUG = 0;
 
-function debug(info, obj) {
-  if (DEBUG) {
+function debug(info, obj, allowDebug = 1) {
+  if (allowDebug) {
     console.log('[*] DEBUG: ' + info + ': ' + JSON.stringify(obj));
   }
 }
@@ -36,7 +35,7 @@ function getDoorState(statusNumber) {
   }
 }
 
-async function openClose(shouldOpen, user, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) {
+async function openClose(shouldOpen, user, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber,allowDebug) {
   let response = await rp({
     method: 'POST',
     uri: genieRPC_URI,
@@ -59,7 +58,7 @@ async function openClose(shouldOpen, user, genieRPC_URI,genieRPC_Header,genieRPC
     json: true,
   });
   
-  debug('desired_status response', response);
+  debug('desired_status response', response, allowDebug);
   
   if (response.error) return 'STOPPED';
   
@@ -84,14 +83,14 @@ async function getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) 
     json: true,
   });
   
-  debug('door_status response', response);
+  debug('door_status response', response, allowDebug);
   
   if (response.error) return 'STOPPED';
   
   return getDoorState(response[0].result[0][1]); 
 }
 
-async function sendCommandToDoor(user, password, action, deviceNumber, doorNumber ) {
+async function sendCommandToDoor(user, password, action, deviceNumber, doorNumber, allowDebug) {
   try {
     
     // 1: get loginToken
@@ -104,7 +103,7 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
       json: true,
     });
     
-    debug('Token',loginToken);
+    debug('Token',loginToken, allowDebug);
     
     let genieTokenHeader = Object.assign({}, genieAppHeader, { 'Authorization': 'Token: ' + loginToken });
     
@@ -116,7 +115,7 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
       json: true, 
     });
     
-    debug('users/_this',responseUser);
+    debug('users/_this',responseUser, allowDebug);
     
     let userId = responseUser.id;
     
@@ -128,7 +127,7 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
       json: true, 
     });
     
-    debug('Portals', portals);
+    debug('Portals', portals, allowDebug);
     
     let portalId = portals[0].PortalID;
     
@@ -140,7 +139,7 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
       json: true 
     });
     
-    debug('Portals/'+portalId, portalDetails);
+    debug('Portals/'+portalId, portalDetails, allowDebug);
     
     // use info.key as a part of auth token
     let genieRPC_Auth = {
@@ -148,7 +147,7 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
       client_id: portalDetails.devices[deviceNumber]
     };
     
-    debug('PortalDetails.Info',portalDetails.info);
+    debug('PortalDetails.Info',portalDetails.info, allowDebug);
     
     let genieRPC_Header = Object.assign({}, genieAppHeader, {
       'Authorization': 'Token: ' + loginToken,
@@ -157,12 +156,12 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
     
     switch(action) {
       case 'open':
-        return await openClose(1,user,genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
+        return await openClose(1,user,genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber,allowDebug);
       case 'close':
-        return await openClose(0,user,genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
+        return await openClose(0,user,genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber,allowDebug);
       case 'status':
       default:
-        return await getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber);
+        return await getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber,allowDebug);
     }
   } catch (err) {
     console.log(err);
@@ -172,8 +171,8 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
 }
 
 // keping the callback signature for backwards compatibility
-module.exports = (user, password, action, callback, deviceNumber = 0, doorNumber = 1) => {
-  sendCommandToDoor(user, password, action, deviceNumber, doorNumber)
+module.exports = (user, password, action, callback, deviceNumber = 0, doorNumber = 1, allowDebug = 0) => {
+  sendCommandToDoor(user, password, action, deviceNumber, doorNumber, allowDebug)
   .then(result => callback(result))
   .catch(err => console.log(err));
 };
