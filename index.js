@@ -164,7 +164,8 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
         return await getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber,allowDebug);
     }
   } catch (err) {
-    console.log(err);
+    console.log(err.message);
+    debug('Error details',err,allowDebug);
     return 'STOPPED';
   }
   return 'STOPPED';
@@ -174,6 +175,9 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
 module.exports = (user, password, action, callback, deviceNumber = 0, doorNumber = 1, allowDebug = 0) => {
   sendCommandToDoor(user, password, action, deviceNumber, doorNumber, allowDebug)
   .then(result => callback(result))
-  .catch(err => console.log(err));
+  .catch(err => {
+        console.log(err.message);
+        debug('Error details',err,allowDebug);
+  });
 };
 
