@@ -10,16 +10,17 @@ function callback(text)  {
   console.log(text);
 }
 
-aladdinGarageDoor('USER', 'PASSWORD', 'ACTION', callback, 'DEVICE_NUMBER', 'GARAGE_NUMBER');
+aladdinGarageDoor('USER', 'PASSWORD', 'ACTION', callback, 'DEVICE_NUMBER', 'GARAGE_NUMBER', allowDebug);
 ```
 Parameter       | Description
 ----------------|------------
 USER            | Your Genie Aladdin Connect Username (usually an email address)
-PASSWORD   | Your Genie Aladdin Connect Password
+PASSWORD        | Your Genie Aladdin Connect Password
 ACTION          | status, open, or close
 callback        | a callback function
-DEVICE_NUMBER     | (optional - 0, 1, 2) for multiple Garage Door Controllers
+DEVICE_NUMBER   | (optional - 0, 1, 2) for multiple Garage Door Controllers
 GARAGE_NUMBER   | (optional - 1, 2, 3) for multiple Garage Doors connected to a single device
+allowDebug      | Defaults to false, set to true for more logs to be generated
 
 The `callback` function to run and send current door state.  
 If `ACTION` was status, it will get CLOSED or OPEN, otherwise it will get OPENING or CLOSING.
