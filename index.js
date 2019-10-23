@@ -10,7 +10,7 @@ const genieAppHeader = {
   'BuildVersion': '131',
 }
 
-function debug(info, obj, allowDebug = 1) {
+function debug(info, obj, allowDebug) {
   if (allowDebug) {
     console.log('[*] DEBUG: ' + info + ': ' + JSON.stringify(obj));
   }
@@ -35,7 +35,7 @@ function getDoorState(statusNumber) {
   }
 }
 
-async function openClose(shouldOpen, user, genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber,allowDebug) {
+async function openClose(shouldOpen, user, genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug) {
   let response = await rp({
     method: 'POST',
     uri: genieRPC_URI,
@@ -65,7 +65,7 @@ async function openClose(shouldOpen, user, genieRPC_URI,genieRPC_Header,genieRPC
   return shouldOpen?'OPENING':'CLOSING';
 }
 
-async function getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber) {
+async function getStatus(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug) {
   let response = await rp({
     method: 'POST',
     uri: genieRPC_URI,
@@ -115,7 +115,7 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
       json: true, 
     });
     
-    debug('users/_this',responseUser, allowDebug);
+    debug('users/_this', responseUser, allowDebug);
     
     let userId = responseUser.id;
     
@@ -156,16 +156,16 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
     
     switch(action) {
       case 'open':
-        return await openClose(1,user,genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber,allowDebug);
+        return await openClose(1, user, genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug);
       case 'close':
-        return await openClose(0,user,genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber,allowDebug);
+        return await openClose(0, user, genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug);
       case 'status':
       default:
-        return await getStatus(genieRPC_URI,genieRPC_Header,genieRPC_Auth,doorNumber,allowDebug);
+        return await getStatus(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug);
     }
   } catch (err) {
     console.log(err.message);
-    debug('Error details',err,allowDebug);
+    debug('Error details', err, allowDebug);
     return 'STOPPED';
   }
   return 'STOPPED';
