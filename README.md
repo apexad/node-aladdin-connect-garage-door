@@ -20,7 +20,7 @@ ACTION          | status, open, or close
 callback        | a callback function
 DEVICE_NUMBER   | (optional - 0, 1, 2) for multiple Garage Door Controllers
 GARAGE_NUMBER   | (optional - 1, 2, 3) for multiple Garage Doors connected to a single device
-allowDebug      | Defaults to false, set to true for more logs to be generated
+allowDebug      | (optional - true, false) set to true for more logs to be generated (defaults to false)
 
 The `callback` function to run and send current door state.  
 If `ACTION` was status, it will get CLOSED or OPEN, otherwise it will get OPENING or CLOSING.

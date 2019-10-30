@@ -31,7 +31,7 @@ function getDoorState(statusNumber) {
     case 0: // Unknown
     case 7: // Not Configured
     default: // Error
-      return 'STOPPED'
+      return 'STOPPED';
   }
 }
 
@@ -60,9 +60,11 @@ async function openClose(shouldOpen, user, genieRPC_URI, genieRPC_Header, genieR
   
   debug('desired_status response', response, allowDebug);
   
-  if (response.error) return 'STOPPED';
+  if (response.error) {
+    return 'STOPPED';
+  }
   
-  return shouldOpen?'OPENING':'CLOSING';
+  return shouldOpen ? 'OPENING' : 'CLOSING';
 }
 
 async function getStatus(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug) {
@@ -85,14 +87,15 @@ async function getStatus(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumbe
   
   debug('door_status response', response, allowDebug);
   
-  if (response.error) return 'STOPPED';
+  if (response.error) {
+    return 'STOPPED';
+  }3
   
   return getDoorState(response[0].result[0][1]); 
 }
 
 async function sendCommandToDoor(user, password, action, deviceNumber, doorNumber, allowDebug) {
   try {
-    
     // 1: get loginToken
     let loginToken = await rp({
       method: 'GET',
@@ -147,7 +150,7 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
       client_id: portalDetails.devices[deviceNumber]
     };
     
-    debug('PortalDetails.Info',portalDetails.info, allowDebug);
+    debug('PortalDetails.Info', portalDetails.info, allowDebug);
     
     let genieRPC_Header = Object.assign({}, genieAppHeader, {
       'Authorization': 'Token: ' + loginToken,
@@ -168,7 +171,6 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
     debug('Error details', err, allowDebug);
     return 'STOPPED';
   }
-  return 'STOPPED';
 }
 
 // keping the callback signature for backwards compatibility
@@ -177,7 +179,7 @@ module.exports = (user, password, action, callback, deviceNumber = 0, doorNumber
   .then(result => callback(result))
   .catch(err => {
         console.log(err.message);
-        debug('Error details',err,allowDebug);
+        debug('Error details', err, allowDebug);
   });
 };
 
