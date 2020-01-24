@@ -1,4 +1,5 @@
 # Node tool for Aladdin Connect Garage Door
+[![NPM Version](https://img.shields.io/npm/v/node-aladdin-connect-garage-door.svg)](https://www.npmjs.com/package/node-aladdin-connect-garage-door)
 
 This tool can be used to check the `status` and `open`/`close` an Aladdin Connect Garage Door via a node script.
 
