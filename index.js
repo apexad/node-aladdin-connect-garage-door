@@ -12,7 +12,7 @@ const genieAppHeader = {
 
 function debug(info, obj, allowDebug) {
   if (allowDebug) {
-    console.log('[*] DEBUG: ' + info + ': ' + JSON.stringify(obj));
+    console.log(`[*] DEBUG: ${info}: ${JSON.stringify(obj)}`);
   }
 }
 
@@ -44,12 +44,12 @@ async function openClose(shouldOpen, user, genieRPC_URI, genieRPC_Header, genieR
       auth: genieRPC_Auth,
       calls: [
         {
-          arguments: [ { alias: 'dps' + doorNumber + '.desired_status' }, shouldOpen ],
+          arguments: [ { alias: `dps${doorNumber}.desired_status` }, shouldOpen ],
           id: 1,
           procedure: 'write'
         },
         {
-          arguments: [ { alias: 'dps' + doorNumber + '.desired_status_user' }, user ],
+          arguments: [ { alias: `dps${doorNumber}.desired_status_user` }, user ],
           id: 1,
           procedure: 'write'
         },
@@ -63,7 +63,6 @@ async function openClose(shouldOpen, user, genieRPC_URI, genieRPC_Header, genieR
   if (response.error) {
     return 'STOPPED';
   }
-  
   return shouldOpen ? 'OPENING' : 'CLOSING';
 }
 
@@ -76,7 +75,7 @@ async function getStatus(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumbe
       auth: genieRPC_Auth,
       calls: [
         {
-          arguments: [ { alias: 'dps' + doorNumber + '.door_status' }, {} ],
+          arguments: [ { alias: `dps${doorNumber}.door_status` }, {} ],
           id: 1,
           procedure: 'read'
         },
@@ -89,8 +88,7 @@ async function getStatus(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumbe
   
   if (response.error) {
     return 'STOPPED';
-  }3
-  
+  }
   return getDoorState(response[0].result[0][1]); 
 }
 
@@ -99,21 +97,21 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
     // 1: get loginToken
     let loginToken = await rp({
       method: 'GET',
-      uri: genieURI + 'users/_this/token',
+      uri: `${genieURI}users/_this/token`,
       headers: Object.assign({}, genieAppHeader, {
-        'Authorization': 'Basic '+ Buffer.from(user + ':' + password).toString('base64'),
+        'Authorization': `Basic ${Buffer.from(`${user}:${password}`).toString('base64')}`,
       }),
       json: true,
     });
     
     debug('Token',loginToken, allowDebug);
     
-    let genieTokenHeader = Object.assign({}, genieAppHeader, { 'Authorization': 'Token: ' + loginToken });
+    let genieTokenHeader = Object.assign({}, genieAppHeader, { 'Authorization': `Token: ${loginToken}` });
     
     // 2: get userID
     let responseUser = await rp({ 
       method: 'GET', 
-      uri: genieURI + 'users/_this', 
+      uri: `${genieURI}users/_this`,
       headers: genieTokenHeader, 
       json: true, 
     });
@@ -125,7 +123,7 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
     // 3: get portalId
     let portals = await rp({ 
       method: 'GET', 
-      uri: genieURI + 'users/' + userId + '/portals', 
+      uri: `${genieURI}users/${userId}/portals`,
       headers: genieTokenHeader, 
       json: true, 
     });
@@ -137,14 +135,13 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
     // 4: get portalDetails
     let portalDetails = await rp({
       method: 'GET', 
-      uri: genieURI + 'portals/' + portalId, 
+      uri: `${genieURI}portals/${portalId}`,
       headers: genieTokenHeader, 
       json: true 
     });
     
-    debug('Portals/'+portalId, portalDetails, allowDebug);
+    debug(`Portals/${portalId}`, portalDetails, allowDebug);
     
-    // use info.key as a part of auth token
     let genieRPC_Auth = {
       cik: portalDetails.info.key,
       client_id: portalDetails.devices[deviceNumber]
@@ -153,7 +150,7 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
     debug('PortalDetails.Info', portalDetails.info, allowDebug);
     
     let genieRPC_Header = Object.assign({}, genieAppHeader, {
-      'Authorization': 'Token: ' + loginToken,
+      'Authorization': `Token: ${loginToken}`,
       'Content-Type': 'application/json',
     });
     
@@ -167,7 +164,6 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
         return await getStatus(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug);
     }
   } catch (err) {
-    console.log(err.message);
     debug('Error details', err, allowDebug);
     return 'STOPPED';
   }
@@ -178,8 +174,6 @@ module.exports = (user, password, action, callback, deviceNumber = 0, doorNumber
   sendCommandToDoor(user, password, action, deviceNumber, doorNumber, allowDebug)
   .then(result => callback(result))
   .catch(err => {
-        console.log(err.message);
-        debug('Error details', err, allowDebug);
+    debug('Error details', err, allowDebug);
   });
 };
-
