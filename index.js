@@ -170,7 +170,11 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
 }
 
 // keping the callback signature for backwards compatibility
-module.exports = (user, password, action, callback, deviceNumber = 0, doorNumber = 1, allowDebug = false) => {
+module.exports = (user, password, action, callback, deviceNumber, doorNumber, allowDebug) => {
+  const deviceNumber = deviceNumber || 0;
+  const doorNumber = doorNumber || 1;
+  const allowDebug = allowDebug || false;
+
   sendCommandToDoor(user, password, action, deviceNumber, doorNumber, allowDebug)
   .then(result => callback(result))
   .catch(err => {
