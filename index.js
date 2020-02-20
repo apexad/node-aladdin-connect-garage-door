@@ -92,6 +92,32 @@ async function getStatus(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumbe
   return getDoorState(response[0].result[0][1]); 
 }
 
+async function getBattery(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug) {
+  let response = await rp({
+    method: 'POST',
+    uri: genieRPC_URI,
+    headers: genieRPC_Header,
+    body: {
+      auth: genieRPC_Auth,
+      calls: [
+        {
+          arguments: [ { alias: `dps${doorNumber}.battery_level` }, {} ],
+          id: 1,
+          procedure: 'read'
+        },
+      ]
+    },
+    json: true,
+  });
+
+  debug('battery_level response', response[0].result[0][1], allowDebug);
+
+  if (response.error) {
+    return 'STOPPED';
+  }
+  return response[0].result[0][1];
+}
+
 async function sendCommandToDoor(user, password, action, deviceNumber, doorNumber, allowDebug) {
   try {
     // 1: get loginToken
@@ -159,6 +185,8 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
         return await openClose(1, user, genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug);
       case 'close':
         return await openClose(0, user, genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug);
+      case 'battery':
+        return getBattery(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug);
       case 'status':
       default:
         return await getStatus(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug);

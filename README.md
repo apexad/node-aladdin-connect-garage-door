@@ -18,14 +18,15 @@ Parameter       | Description
 ----------------|------------
 USER            | Your Genie Aladdin Connect Username (usually an email address)
 PASSWORD        | Your Genie Aladdin Connect Password
-ACTION          | status, open, or close
+ACTION          | status, battery, open, or close
 callback        | a callback function
-DEVICE_NUMBER   | (optional - 0, 1, 2) for multiple Garage Door Controllers
-GARAGE_NUMBER   | (optional - 1, 2, 3) for multiple Garage Doors connected to a single device
-allowDebug      | (optional - true, false) set to true for more logs to be generated (defaults to false)
+DEVICE_NUMBER   | *(optional - 0, 1, 2)* for multiple Garage Door Controllers
+GARAGE_NUMBER   | *(optional - 1, 2, 3)* for multiple Garage Doors connected to a single device
+allowDebug      | *(optional - true, false)* set to true for more logs to be generated (defaults to false)
 
 The `callback` function to run and send current door state.  
-If `ACTION` was status, it will get CLOSED or OPEN, otherwise it will get OPENING or CLOSING.
+If `ACTION` is status, the results are: OPENING, OPEN, CLOSING, or CLOSED.  
+If `ACTION` is battery, it returns the battery percent.
 
 ## Credits
 Uses API Documentation from  [aladdin connect postman](https://documenter.getpostman.com/view/5856894/RzZAjHxV) which was implemented via python by [shoejosh](https://github.com/shoejosh/aladdin-connect).
