@@ -6,6 +6,7 @@ This tool can be used to check the `status` and `open`/`close` an Aladdin Connec
 ## Usage
 ```javascript
 var aladdinGarageDoor = require('node-aladdin-connect-garage-door');
+var allowDebug = true;
 
 function callback(text)  {
   console.log(text);
