@@ -27,7 +27,7 @@ action          | **(required, invalid default: status)** status, battery, statu
 callback        | **(required)** action callback, function parameter is action result (like door status or battery level).
 deviceNumber    | **(optional - 0, 1, 2, default: 0)** Use for multiple Garage Door controller devices on 1 account
 garageNumber    | **(optional - 1, 2, 3, default: 1)** Use for multiple Garage Doors connected to a single device
-allowDebug      | **(optional - true, false, default: false)** Set to true for more logs to be generated (defaults to false)
+allowDebug      | **(optional - true, false, default: false)** Set to true for more logs to be generated
 
 ## Actions
 Action          | Callback function results
