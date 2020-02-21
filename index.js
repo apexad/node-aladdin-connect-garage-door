@@ -16,7 +16,7 @@ function debug(info, obj, allowDebug) {
   }
 }
 
-function getDoorState(statusNumber) {
+function doorStatusNumberToString(statusNumber) {
   switch(statusNumber) {
     case 1: //Open
       return 'OPEN';
@@ -50,7 +50,7 @@ async function openClose(shouldOpen, user, genieRPC_URI, genieRPC_Header, genieR
         },
         {
           arguments: [ { alias: `dps${doorNumber}.desired_status_user` }, user ],
-          id: 1,
+          id: 2,
           procedure: 'write'
         },
       ]
@@ -66,30 +66,44 @@ async function openClose(shouldOpen, user, genieRPC_URI, genieRPC_Header, genieR
   return shouldOpen ? 'OPENING' : 'CLOSING';
 }
 
-async function getStatus(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug) {
+async function getStatus(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug, includeBattery) {
+  const calls = [
+    {
+      arguments: [ { alias: `dps${doorNumber}.door_status` }, {} ],
+      id: 1,
+      procedure: 'read'
+    },
+  ];
+
+  if (includeBattery) {
+    calls.push({
+      arguments: [ { alias: `dps${doorNumber}.battery_level` }, {} ],
+      id: 2,
+      procedure: 'read'
+    });
+  }
+
   let response = await rp({
     method: 'POST',
     uri: genieRPC_URI,
     headers: genieRPC_Header,
     body: {
       auth: genieRPC_Auth,
-      calls: [
-        {
-          arguments: [ { alias: `dps${doorNumber}.door_status` }, {} ],
-          id: 1,
-          procedure: 'read'
-        },
-      ]
+      calls,
     },
     json: true,
   });
   
-  debug('door_status response', response, allowDebug);
+  debug(`door_status ${includeBattery ? 'and battery_level ' : ''}response`, response, allowDebug);
   
   if (response.error) {
     return 'STOPPED';
   }
-  return getDoorState(response[0].result[0][1]); 
+
+  const doorStatus = doorStatusNumberToString(response[0].result[0][1]);
+  const batteryPercent = includeBattery ? response[1].result[0][1] : 0;
+
+  return `${doorStatus}${includeBattery ? `:${batteryPercent}` : ''}`;
 }
 
 async function getBattery(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug) {
@@ -179,6 +193,9 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
       'Authorization': `Token: ${loginToken}`,
       'Content-Type': 'application/json',
     });
+
+    // 5: open/close, get battery, get status
+    const includeBattery = action === 'status-and-batt';
     
     switch(action) {
       case 'open':
@@ -186,10 +203,11 @@ async function sendCommandToDoor(user, password, action, deviceNumber, doorNumbe
       case 'close':
         return await openClose(0, user, genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug);
       case 'battery':
-        return getBattery(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug);
+        return await getBattery(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug);
       case 'status':
+      case 'status-and-batt':
       default:
-        return await getStatus(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug);
+        return await getStatus(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug, includeBattery);
     }
   } catch (err) {
     debug('Error details', err, allowDebug);
