@@ -81,6 +81,12 @@ async function getStatus(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumbe
       id: 2,
       procedure: 'read'
     });
+
+    calls.push({
+      arguments: [ { alias: `dps${doorNumber}.link_status` }, {} ],
+      id: 3,
+      procedure: 'read'
+    });
   }
 
   let response = await rp({
@@ -94,7 +100,7 @@ async function getStatus(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumbe
     json: true,
   });
   
-  debug(`door_status ${includeBattery ? 'and battery_level ' : ''}response`, response, allowDebug);
+  debug(`door_status${includeBattery ? ', battery_level, and link_status' : ''} response`, response, allowDebug);
   
   if (response.error) {
     return 'STOPPED';
@@ -102,8 +108,9 @@ async function getStatus(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumbe
 
   const doorStatus = doorStatusNumberToString(response[0].result[0][1]);
   const batteryPercent = includeBattery ? response[1].result[0][1] : 0;
+  const linkStatus = includeBattery ? response[2].result[0][1] : 0;
 
-  return `${doorStatus}${includeBattery ? `:${batteryPercent}` : ''}`;
+  return `${doorStatus}${includeBattery ? `:${linkStatus === 3 ? batteryPercent : 0}` : ''}`;
 }
 
 async function getBattery(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumber, allowDebug) {
@@ -119,17 +126,26 @@ async function getBattery(genieRPC_URI, genieRPC_Header, genieRPC_Auth, doorNumb
           id: 1,
           procedure: 'read'
         },
+        {
+          arguments: [ { alias: `dps${doorNumber}.link_status` }, {} ],
+          id: 2,
+          procedure: 'read'
+        },
       ]
     },
     json: true,
   });
 
-  debug('battery_level response', response[0].result[0][1], allowDebug);
+  debug('battery_level and link_status response', response, allowDebug);
 
   if (response.error) {
     return 'STOPPED';
   }
-  return response[0].result[0][1];
+
+  const batteryPercent = response[0].result[0][1];
+  const linkStatus = response[1].result[0][1];
+
+  return linkStatus === 3 ? batteryPercent : 0;
 }
 
 async function sendCommandToDoor(user, password, action, deviceNumber, doorNumber, allowDebug) {
