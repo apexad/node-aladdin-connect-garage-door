@@ -1,5 +1,8 @@
 # Node tool for Aladdin Connect Garage Door
-[![NPM Version](https://img.shields.io/npm/v/node-aladdin-connect-garage-door.svg)](https://www.npmjs.com/package/node-aladdin-connect-garage-door)
+[![mit license](https://badgen.net/badge/license/MIT/red)](https://github.com/apexad/homebridge-mysmartblinds-bridge/blob/master/LICENSE)
+[![npm](https://badgen.net/npm/v/node-aladdin-connect-garage-door)](https://www.npmjs.com/package/node-aladdin-connect-garage-door)
+[![npm](https://badgen.net/npm/dt/node-aladdin-connect-garage-door)](https://www.npmjs.com/package/node-aladdin-connect-garage-door)
+[![donate](https://badgen.net/badge/donate/paypal/91BE09)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=JS2VTL89E6VZ4&source=url)
 
 This tool can be used to check the `status` and `open`/`close` an Aladdin Connect Garage Door via a Node.js script.
 
